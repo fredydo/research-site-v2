@@ -1,0 +1,35 @@
+# Environment — NEVER commit this
+.env
+.env.local
+.env.production
+
+# Database data — too large, use backups instead
+postgres-data/
+mongodb-data/
+
+# SSL certificates — sensitive
+certs/
+
+# Docker volumes
+people_images/
+public/images/people/
+
+# Node
+node_modules/
+.next/
+out/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# Backups with credentials
+backup*.sql
+backups/
+mongodump/
+postgres-data/
+mongodb-data/

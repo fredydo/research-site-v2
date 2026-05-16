@@ -1,0 +1,8 @@
+node_modules
+.next
+.git
+postgres-data
+mongodb-data
+certs
+*.pem
+.env
