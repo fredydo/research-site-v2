@@ -9,7 +9,7 @@ import bcrypt from 'bcryptjs'
 export async function GET() {
   const { rows } = await pool.query(
     `SELECT id, "fullName" AS name, email, biography AS bio, "profilePictureUrl" AS avatar,
-            "googleScholarUrl", "cvlacUrl", "researchInterests", "researchLine", admin
+            "googleScholarUrl", "cvlacUrl", "researchInterests", "researchLine", admin, "isProfessor"
      FROM "user"
      WHERE email != 'grupogitalab@udea.edu.co'
      ORDER BY "fullName" ASC`
@@ -22,14 +22,14 @@ export async function POST(req: NextRequest) {
   if (!session || (session.user as any).role !== 'admin')
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
-  const { fullName, email, password, biography, profilePictureUrl, googleScholarUrl, cvlacUrl, researchInterests, researchLine, admin } = await req.json()
+  const { fullName, email, password, biography, profilePictureUrl, googleScholarUrl, cvlacUrl, researchInterests, researchLine, admin, isProfessor } = await req.json()
   const hashed = await bcrypt.hash(password || 'Gita2024!', 6)
   const now = new Date().toISOString()
 
   const { rows } = await pool.query(
-    `INSERT INTO "user" ("fullName", email, password, biography, "profilePictureUrl", "googleScholarUrl", "cvlacUrl", "researchInterests", "researchLine", admin, created, updated)
+    `INSERT INTO "user" ("fullName", email, password, biography, "profilePictureUrl", "googleScholarUrl", "cvlacUrl", "researchInterests", "researchLine", admin, "isProfessor", created, updated)
      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$11) RETURNING id`,
-    [fullName, email, hashed, biography || null, profilePictureUrl || null, googleScholarUrl || null, cvlacUrl || null, researchInterests || null, researchLine, admin || false, now]
+    [fullName, email, hashed, biography || null, profilePictureUrl || null, googleScholarUrl || null, cvlacUrl || null, researchInterests || null, researchLine, admin || false, isProfessor !== false, now]
   )
   return NextResponse.json({ data: rows[0] }, { status: 201 })
 }

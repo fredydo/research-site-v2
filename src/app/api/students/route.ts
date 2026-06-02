@@ -32,12 +32,12 @@ export async function POST(req: NextRequest) {
   if (!session || (session.user as any).role !== 'admin')
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
-  const { fullName, email, researchLine, yearInit, yearEnd, pictureUrl, active, type } = await req.json()
+  const { fullName, email, researchLine, yearInit, yearEnd, pictureUrl, active, type, userId } = await req.json()
   const now = new Date().toISOString()
   const { rows } = await pool.query(
-    `INSERT INTO students ("fullName", email, "researchLine", "yearInit", "yearEnd", "pictureUrl", active, type, created, updated)
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$9) RETURNING id`,
-    [fullName, email, researchLine, yearInit || null, yearEnd || null, pictureUrl || null, active ?? true, type, now]
+    `INSERT INTO students ("fullName", email, "researchLine", "yearInit", "yearEnd", "pictureUrl", active, type, "userId", created, updated)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$10) RETURNING id`,
+    [fullName, email, researchLine, yearInit || null, yearEnd || null, pictureUrl || null, active ?? true, type, userId || null, now]
   )
   return NextResponse.json({ data: rows[0] }, { status: 201 })
 }

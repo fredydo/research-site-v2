@@ -4,15 +4,16 @@ import { useState, useEffect, useCallback } from 'react'
 import { useSession } from 'next-auth/react'
 import Modal from '@/components/admin/Modal'
 import ConfirmDialog from '@/components/admin/ConfirmDialog'
+import PeopleSelector from '@/components/admin/PeopleSelector'
 import { useLang } from '@/lib/i18n/LangContext'
 import ResearchLineCarousel from '@/components/ResearchLineCarousel'
 
 type Publication = {
   _id: string; citation: string; year: string; yearShort: string
   paperUrl?: string; pdfUrl?: string; bibtexCitation?: string
-  researchLine: string; type: string; doi?: string
+  researchLine: string; type: string; doi?: string; userIds?: number[]
 }
-type FormData = { citation: string; year: string; type: string; researchLine: string; paperUrl: string; bibtexCitation: string; doi: string }
+type FormData = { citation: string; year: string; type: string; researchLine: string; paperUrl: string; bibtexCitation: string; doi: string; userIds: number[] }
 
 const TABS = [
   { id: 'PATTERN ANALYSIS AND SIGNAL PROCESSING' },
@@ -58,7 +59,7 @@ const CAROUSEL_DATA = [
   },
 ]
 
-const EMPTY: FormData = { citation: '', year: String(new Date().getFullYear()), type: 'JOURNAL ARTICLES', researchLine: 'PATTERN ANALYSIS AND SIGNAL PROCESSING', paperUrl: '', bibtexCitation: '', doi: '' }
+const EMPTY: FormData = { citation: '', year: String(new Date().getFullYear()), type: 'JOURNAL ARTICLES', researchLine: 'PATTERN ANALYSIS AND SIGNAL PROCESSING', paperUrl: '', bibtexCitation: '', doi: '', userIds: [] }
 
 export default function PublicationsPage() {
   const { data: session, status } = useSession()
@@ -66,6 +67,7 @@ export default function PublicationsPage() {
   const isAdmin = status === 'authenticated' && (session?.user as any)?.role === 'admin'
 
   const [activeTab, setActiveTab]       = useState(0)
+  const [allPeople, setAllPeople]       = useState<{id:number; name:string}[]>([])
   const [pubs, setPubs]                 = useState<Publication[]>([])
   const [loading, setLoading]           = useState(true)
   const [openYears, setOpenYears]       = useState<Record<string, boolean>>({})
@@ -77,6 +79,25 @@ export default function PublicationsPage() {
   const [form, setForm]                 = useState<FormData>(EMPTY)
 
   const [sortBy, setSortBy] = useState<'year' | 'type'>('year')
+
+  useEffect(() => {
+    Promise.all([
+      fetch('/api/users').then(r => r.json()),
+      fetch('/api/students?type=phd').then(r => r.json()),
+      fetch('/api/students?type=masters').then(r => r.json()),
+      fetch('/api/students?type=undergraduate').then(r => r.json()),
+      fetch('/api/students?type=alumni').then(r => r.json()),
+    ]).then(([users, phd, masters, undergrad, alumni]) => {
+      const userList = (users.data || []).map((u: any) => ({ id: u.id, name: u.name }))
+      const studentList = [
+        ...(phd.data || []),
+        ...(masters.data || []),
+        ...(undergrad.data || []),
+        ...(alumni.data || []),
+      ].map((s: any) => ({ id: s.id + 10000, name: s.fullName }))
+      setAllPeople([...userList, ...studentList])
+    })
+  }, [])
 
   const TAB_LABELS = [t.rl.pattern, t.rl.comms, t.rl.optical]
   const TAB_DESCS  = [t.rl.pattern_desc, t.rl.comms_desc, t.rl.optical_desc]
@@ -122,7 +143,7 @@ export default function PublicationsPage() {
     : Object.keys(byYear).sort((a, b) => (TYPE_ORDER[a] ?? 99) - (TYPE_ORDER[b] ?? 99))
 
   const openAdd  = () => { setEditTarget(null); setForm({ ...EMPTY, researchLine: TABS[activeTab].id }); setShowForm(true) }
-  const openEdit = (p: Publication) => { setEditTarget(p); setForm({ citation: p.citation, year: p.yearShort || getYear(p.year), type: p.type || 'JOURNAL ARTICLES', researchLine: p.researchLine, paperUrl: p.paperUrl || p.pdfUrl || '', bibtexCitation: p.bibtexCitation || '', doi: p.doi || '' }); setShowForm(true) }
+  const openEdit = (p: Publication) => { setEditTarget(p); setForm({ citation: p.citation, year: p.yearShort || getYear(p.year), type: p.type || 'JOURNAL ARTICLES', researchLine: p.researchLine, paperUrl: p.paperUrl || p.pdfUrl || '', bibtexCitation: p.bibtexCitation || '', doi: p.doi || '', userIds: p.userIds || [] }); setShowForm(true) }
   const handleSave = async () => { setSaving(true); const method = editTarget ? 'PUT' : 'POST'; const url = editTarget ? `/api/publications/${editTarget._id}` : '/api/publications'; await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...form, doi: form.doi || null }) }); setSaving(false); setShowForm(false); load() }
   const handleDelete = async () => { if (!deleteTarget) return; setDeleting(true); await fetch(`/api/publications/${deleteTarget._id}`, { method: 'DELETE' }); setDeleting(false); setDeleteTarget(null); load() }
 
@@ -356,6 +377,12 @@ export default function PublicationsPage() {
             <div className="form-group"><label>{t.publications.form.pdf_url}</label><input type="url" value={form.paperUrl} onChange={e => setForm(f => ({ ...f, paperUrl: e.target.value }))} placeholder="https://…" /></div>
             <div className="form-group"><label>DOI</label><input type="text" value={form.doi} onChange={e => setForm(f => ({ ...f, doi: e.target.value }))} placeholder="10.1109/…" /></div>
           </div>
+          <PeopleSelector
+            label="Autores del grupo GITA"
+            people={allPeople}
+            selected={form.userIds}
+            onChange={ids => setForm(f => ({ ...f, userIds: ids }))}
+          />
           <div className="form-group"><label>{t.publications.form.bibtex}</label><textarea rows={3} value={form.bibtexCitation} onChange={e => setForm(f => ({ ...f, bibtexCitation: e.target.value }))} style={{ fontFamily: 'monospace', fontSize: '.8rem' }} /></div>
           <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end', marginTop: '1rem' }}>
             <button className="btn btn-outline" onClick={() => setShowForm(false)}>{t.publications.form.cancel}</button>

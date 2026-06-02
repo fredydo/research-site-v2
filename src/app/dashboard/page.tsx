@@ -60,7 +60,9 @@ export default async function DashboardPage() {
               <h3 style={{ marginBottom: '.5rem' }}>Panel de administrador</h3>
               <p className="text-sm text-muted" style={{ marginBottom: '1rem' }}>Acceso completo para agregar, editar y eliminar contenido.</p>
               <div style={{ display: 'flex', gap: '.75rem', flexWrap: 'wrap' }}>
-                <Link href="/people"       className="btn btn-primary btn-sm">Gestionar personas</Link>
+                <Link href="/people"            className="btn btn-primary btn-sm">Gestionar personas</Link>
+              <Link href="/dashboard/contacts"          className="btn btn-outline btn-sm">📬 Ver mensajes</Link>
+              <Link href="/dashboard/password-requests" className="btn btn-outline btn-sm">🔑 Solicitudes contraseña</Link>
                 <Link href="/publications" className="btn btn-outline btn-sm">Publicaciones</Link>
                 <Link href="/news"         className="btn btn-outline btn-sm">Noticias</Link>
               </div>

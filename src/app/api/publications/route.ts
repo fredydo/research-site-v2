@@ -16,13 +16,19 @@ export async function GET(req: NextRequest) {
   const rl  = RL_MAP[tag] ?? RL_MAP['pattern_analysis_and_signal_processing']
 
   const { rows } = await pool.query(
-    `SELECT id AS "_id", citation, year,
-            SUBSTRING(year, 1, 4) AS "yearShort",
-            "paperUrl", "bibtexCitation", "researchLine", type,
-            COALESCE(doi, '') AS doi
-     FROM publications
-     WHERE UPPER("researchLine") = UPPER($1)
-     ORDER BY year DESC, id DESC`,
+    `SELECT p.id AS "_id", p.citation, p.year,
+            SUBSTRING(p.year, 1, 4) AS "yearShort",
+            p."paperUrl", p."bibtexCitation", p."researchLine", p.type,
+            COALESCE(p.doi, '') AS doi,
+            COALESCE(
+              array_agg(pu."userId") FILTER (WHERE pu."userId" IS NOT NULL),
+              ARRAY[]::integer[]
+            ) AS "userIds"
+     FROM publications p
+     LEFT JOIN publications_user_user pu ON pu."publicationsId" = p.id
+     WHERE UPPER(p."researchLine") = UPPER($1)
+     GROUP BY p.id
+     ORDER BY p.year DESC, p.id DESC`,
     [rl]
   )
   return NextResponse.json({ data: rows })

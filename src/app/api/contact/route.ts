@@ -1,6 +1,8 @@
+export const dynamic = 'force-dynamic'
+
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
-import nodemailer from 'nodemailer'
+import pool from '@/lib/db/postgres'
 
 const ContactSchema = z.object({
   name:        z.string().min(3),
@@ -17,34 +19,18 @@ export async function POST(req: NextRequest) {
 
   const { name, email, subject, description } = parsed.data
 
-  try {
-    const transporter = nodemailer.createTransport({
-      host: 'smtp.gmail.com',
-      port: 587,
-      secure: false,
-      auth: {
-        user: process.env.EMAIL_SERVICE,
-        pass: process.env.EMAIL_PASSWORD,
-      },
-    })
+  await pool.query(
+    `INSERT INTO contacts (name, email, subject, message, created)
+     VALUES ($1, $2, $3, $4, $5)`,
+    [name, email, subject || null, description, new Date().toISOString()]
+  )
 
-    await transporter.sendMail({
-      from: `"GITA Website" <${process.env.EMAIL_SERVICE}>`,
-      to:   'grupogitalab@udea.edu.co',
-      replyTo: email,
-      subject: subject ? `[GITA Contact] ${subject}` : '[GITA Contact] New message',
-      html: `
-        <h2>New contact form submission</h2>
-        <p><strong>From:</strong> ${name} (${email})</p>
-        ${subject ? `<p><strong>Subject:</strong> ${subject}</p>` : ''}
-        <p><strong>Message:</strong></p>
-        <p>${description.replace(/\n/g, '<br>')}</p>
-      `,
-    })
+  return NextResponse.json({ message: 'Message received' }, { status: 200 })
+}
 
-    return NextResponse.json({ message: 'Message sent' }, { status: 200 })
-  } catch (err) {
-    console.error('Email error:', err)
-    return NextResponse.json({ error: 'Failed to send email' }, { status: 500 })
-  }
+export async function GET(req: NextRequest) {
+  const { rows } = await pool.query(
+    `SELECT * FROM contacts ORDER BY created DESC`
+  )
+  return NextResponse.json({ data: rows })
 }

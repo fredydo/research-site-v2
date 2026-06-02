@@ -5,17 +5,18 @@ import { useSession } from 'next-auth/react'
 import Modal from '@/components/admin/Modal'
 import ConfirmDialog from '@/components/admin/ConfirmDialog'
 import ImageUpload from '@/components/admin/ImageUpload'
+import Link from 'next/link'
 import { useLang } from '@/lib/i18n/LangContext'
 
-type Professor = { id: number; name: string; email: string; bio?: string; avatar?: string; googleScholarUrl?: string; cvlacUrl?: string; researchInterests?: string; researchLine: string; admin: boolean }
-type Student   = { id: number; fullName: string; email: string; researchLine: string; yearInit?: string; yearEnd?: string; pictureUrl?: string; active: boolean; type: string }
-type ProfForm  = { fullName: string; email: string; password: string; biography: string; profilePictureUrl: string; googleScholarUrl: string; cvlacUrl: string; researchInterests: string; researchLine: string; admin: boolean }
-type StudForm  = { fullName: string; email: string; researchLine: string; yearInit: string; yearEnd: string; pictureUrl: string; active: boolean; type: string }
+type Professor = { id: number; name: string; email: string; bio?: string; avatar?: string; googleScholarUrl?: string; cvlacUrl?: string; researchInterests?: string; researchLine: string; admin: boolean; isProfessor: boolean }
+type Student   = { id: number; fullName: string; email: string; researchLine: string; yearInit?: string; yearEnd?: string; pictureUrl?: string; active: boolean; type: string; userId?: number }
+type ProfForm  = { fullName: string; email: string; password: string; biography: string; profilePictureUrl: string; googleScholarUrl: string; cvlacUrl: string; researchInterests: string; researchLine: string; admin: boolean; isProfessor: boolean }
+type StudForm  = { fullName: string; email: string; researchLine: string; yearInit: string; yearEnd: string; pictureUrl: string; active: boolean; type: string; userId: string; googleScholarUrl?: string; cvlacUrl?: string; biography?: string }
 
 const STUDENT_TYPES = ['', 'phd', 'masters', 'undergraduate', 'alumni']
 const RL_OPTIONS = ['PATTERN ANALYSIS AND SIGNAL PROCESSING', 'COMMUNICATIONS SYSTEMS MODELING', 'OPTICAL COMMUNICATIONS']
-const EMPTY_PROF: ProfForm = { fullName: '', email: '', password: '', biography: '', profilePictureUrl: '', googleScholarUrl: '', cvlacUrl: '', researchInterests: '', researchLine: 'PATTERN ANALYSIS AND SIGNAL PROCESSING', admin: false }
-const EMPTY_STUD: StudForm = { fullName: '', email: '', researchLine: 'PATTERN ANALYSIS AND SIGNAL PROCESSING', yearInit: '', yearEnd: '', pictureUrl: '', active: true, type: 'Ph.D' }
+const EMPTY_PROF: ProfForm = { fullName: '', email: '', password: '', biography: '', profilePictureUrl: '', googleScholarUrl: '', cvlacUrl: '', researchInterests: '', researchLine: 'PATTERN ANALYSIS AND SIGNAL PROCESSING', admin: false, isProfessor: true }
+const EMPTY_STUD: StudForm = { fullName: '', email: '', researchLine: 'PATTERN ANALYSIS AND SIGNAL PROCESSING', yearInit: '', yearEnd: '', pictureUrl: '', active: true, type: 'Ph.D', userId: '', googleScholarUrl: '', cvlacUrl: '', biography: '' }
 
 function initials(name: string) { return name.split(' ').slice(0, 2).map(n => n[0]).join('').toUpperCase() }
 
@@ -48,7 +49,7 @@ export default function PeoplePage() {
   const [studForm, setStudForm]         = useState<StudForm>(EMPTY_STUD)
 
   const loadProfs = useCallback(() => {
-    fetch('/api/users').then(r => r.json()).then(({ data }) => { setProfessors(data || []); setLoading(false) }).catch(() => setLoading(false))
+    fetch('/api/users').then(r => r.json()).then(({ data }) => { setProfessors((data || []).filter((u: any) => u.isProfessor)); setLoading(false) }).catch(() => setLoading(false))
   }, [])
 
   const loadStudents = useCallback(() => {
@@ -58,12 +59,12 @@ export default function PeoplePage() {
   useEffect(() => { setLoading(true); if (activeTab === 0) loadProfs(); else loadStudents() }, [activeTab, loadProfs, loadStudents])
 
   const openAddProf  = () => { setEditProf(null); setProfForm(EMPTY_PROF); setShowProfForm(true) }
-  const openEditProf = (p: Professor) => { setEditProf(p); setProfForm({ fullName: p.name, email: p.email, password: '', biography: p.bio || '', profilePictureUrl: p.avatar || '', googleScholarUrl: p.googleScholarUrl || '', cvlacUrl: p.cvlacUrl || '', researchInterests: p.researchInterests || '', researchLine: p.researchLine, admin: p.admin }); setShowProfForm(true) }
+  const openEditProf = (p: Professor) => { setEditProf(p); setProfForm({ fullName: p.name, email: p.email, password: '', biography: p.bio || '', profilePictureUrl: p.avatar || '', googleScholarUrl: p.googleScholarUrl || '', cvlacUrl: p.cvlacUrl || '', researchInterests: p.researchInterests || '', researchLine: p.researchLine, admin: p.admin, isProfessor: p.isProfessor }); setShowProfForm(true) }
   const handleSaveProf = async () => { setSaving(true); const method = editProf ? 'PUT' : 'POST'; const url = editProf ? `/api/users/${editProf.id}` : '/api/users'; await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(profForm) }); setSaving(false); setShowProfForm(false); loadProfs() }
   const handleDeleteProf = async () => { if (!deleteProf) return; setDeleting(true); await fetch(`/api/users/${deleteProf.id}`, { method: 'DELETE' }); setDeleting(false); setDeleteProf(null); loadProfs() }
 
   const openAddStud  = () => { setEditStud(null); setStudForm({ ...EMPTY_STUD, type: STUDENT_TYPES[activeTab] }); setShowStudForm(true) }
-  const openEditStud = (s: Student) => { setEditStud(s); setStudForm({ fullName: s.fullName, email: s.email, researchLine: s.researchLine, yearInit: s.yearInit || '', yearEnd: s.yearEnd || '', pictureUrl: s.pictureUrl || '', active: s.active, type: s.type }); setShowStudForm(true) }
+  const openEditStud = (s: Student) => { setEditStud(s); setStudForm({ fullName: s.fullName, email: s.email, researchLine: s.researchLine, yearInit: s.yearInit || '', yearEnd: s.yearEnd || '', pictureUrl: s.pictureUrl || '', active: s.active, type: s.type, userId: String(s.userId || ''), googleScholarUrl: (s as any).googleScholarUrl || '', cvlacUrl: (s as any).cvlacUrl || '', biography: (s as any).biography || '' }); setShowStudForm(true) }
   const handleSaveStud = async () => { setSaving(true); const method = editStud ? 'PUT' : 'POST'; const url = editStud ? `/api/students/${editStud.id}` : '/api/students'; await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(studForm) }); setSaving(false); setShowStudForm(false); loadStudents() }
   const handleDeleteStud = async () => { if (!deleteStud) return; setDeleting(true); await fetch(`/api/students/${deleteStud.id}`, { method: 'DELETE' }); setDeleting(false); setDeleteStud(null); loadStudents() }
 
@@ -98,9 +99,14 @@ export default function PeoplePage() {
                   {prof.researchInterests && <p className="text-sm" style={{ marginBottom: '.4rem' }}><strong>{t.people.interests}:</strong> {prof.researchInterests}</p>}
                   {prof.bio && <p className="text-sm" style={{ color: 'var(--gray-600)', marginBottom: '.75rem' }}>{prof.bio}</p>}
                   <div style={{ display: 'flex', gap: '.5rem', flexWrap: 'wrap' }}>
-                    <span className="badge badge-green">{prof.admin ? t.people.admin_badge : t.people.member_badge}</span>
+                    {prof.isProfessor
+                      ? <span className="badge badge-green">Profesor</span>
+                      : <span style={{ fontSize: '.72rem', background: 'var(--gray-100)', color: 'var(--gray-500)', padding: '2px 8px', borderRadius: '4px', fontWeight: 600 }}>Miembro</span>
+                    }
+                    {prof.admin && <span style={{ fontSize: '.72rem', background: '#fef3c7', color: '#92400e', padding: '2px 8px', borderRadius: '4px', fontWeight: 600, marginLeft: '.25rem' }}>Admin</span>}
                     {prof.googleScholarUrl && <a href={prof.googleScholarUrl} target="_blank" rel="noopener noreferrer" className="btn btn-outline btn-sm">Google Scholar</a>}
                     {prof.cvlacUrl && <a href={prof.cvlacUrl} target="_blank" rel="noopener noreferrer" className="btn btn-outline btn-sm">CvLAC</a>}
+                    <a href={`/people/${prof.id}`} className="btn btn-outline btn-sm">View more →</a>
                     {isAdmin && <>
                       <button className="btn btn-sm" style={{ background: 'var(--yellow-100)', color: 'var(--yellow-600)' }} onClick={() => openEditProf(prof)}>✏️</button>
                       <button className="btn btn-sm btn-danger" onClick={() => setDeleteProf(prof)}>🗑️</button>
@@ -154,6 +160,10 @@ export default function PeoplePage() {
             <div className="form-group"><label>{t.people.form_prof.email}</label><input type="email" value={profForm.email} onChange={e => setProfForm(f => ({ ...f, email: e.target.value }))} /></div>
           </div>
           {!editProf && <div className="form-group"><label>{t.people.form_prof.password}</label><input type="password" value={profForm.password} onChange={e => setProfForm(f => ({ ...f, password: e.target.value }))} /></div>}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+            <div className="form-group"><label>Año inicio</label><input value={(profForm as any).yearInit || ''} onChange={e => setProfForm(f => ({ ...f, yearInit: e.target.value } as any))} placeholder="2020" /></div>
+            <div className="form-group"><label>Año fin</label><input value={(profForm as any).yearEnd || ''} onChange={e => setProfForm(f => ({ ...f, yearEnd: e.target.value } as any))} placeholder="2024" /></div>
+          </div>
           <div className="form-group"><label>{t.people.form_prof.research_line}</label>
             <select value={profForm.researchLine} onChange={e => setProfForm(f => ({ ...f, researchLine: e.target.value }))}>
               {RL_OPTIONS.map(r => <option key={r} value={r}>{r}</option>)}
@@ -166,9 +176,15 @@ export default function PeoplePage() {
             <div className="form-group"><label>{t.people.form_prof.cvlac}</label><input type="url" value={profForm.cvlacUrl} onChange={e => setProfForm(f => ({ ...f, cvlacUrl: e.target.value }))} /></div>
           </div>
           <ImageUpload label={t.people.form_prof.photo} value={profForm.profilePictureUrl} onChange={url => setProfForm(f => ({ ...f, profilePictureUrl: url }))} />
-          <div className="form-group" style={{ display: 'flex', alignItems: 'center', gap: '.75rem' }}>
-            <input type="checkbox" id="admin-check" checked={profForm.admin} onChange={e => setProfForm(f => ({ ...f, admin: e.target.checked }))} style={{ width: 'auto' }} />
-            <label htmlFor="admin-check" style={{ margin: 0 }}>{t.people.form_prof.admin}</label>
+          <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap' }}>
+            <div className="form-group" style={{ display: 'flex', alignItems: 'center', gap: '.75rem' }}>
+              <input type="checkbox" id="prof-check" checked={profForm.isProfessor} onChange={e => setProfForm(f => ({ ...f, isProfessor: e.target.checked }))} style={{ width: 'auto' }} />
+              <label htmlFor="prof-check" style={{ margin: 0 }}>Es profesor (aparece en People)</label>
+            </div>
+            <div className="form-group" style={{ display: 'flex', alignItems: 'center', gap: '.75rem' }}>
+              <input type="checkbox" id="admin-check" checked={profForm.admin} onChange={e => setProfForm(f => ({ ...f, admin: e.target.checked }))} style={{ width: 'auto' }} />
+              <label htmlFor="admin-check" style={{ margin: 0 }}>{t.people.form_prof.admin}</label>
+            </div>
           </div>
           <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end', marginTop: '1rem' }}>
             <button className="btn btn-outline" onClick={() => setShowProfForm(false)}>{t.people.form_prof.cancel}</button>
@@ -201,7 +217,16 @@ export default function PeoplePage() {
               {RL_OPTIONS.map(r => <option key={r} value={r}>{r}</option>)}
             </select>
           </div>
+          <div className="form-group"><label>Supervisor</label>
+            <select value={studForm.userId} onChange={e => setStudForm(f => ({ ...f, userId: e.target.value }))}>
+              <option value="">-- Sin asignar --</option>
+              {professors.map(p => <option key={p.id} value={String(p.id)}>{p.name}</option>)}
+            </select>
+          </div>
           <ImageUpload label={t.people.form_stud.photo} value={studForm.pictureUrl} onChange={url => setStudForm(f => ({ ...f, pictureUrl: url }))} />
+          <div className="form-group"><label>Google Scholar URL</label><input type="url" value={studForm.googleScholarUrl || ''} onChange={e => setStudForm(f => ({ ...f, googleScholarUrl: e.target.value }))} /></div>
+          <div className="form-group"><label>CvLAC URL</label><input type="url" value={studForm.cvlacUrl || ''} onChange={e => setStudForm(f => ({ ...f, cvlacUrl: e.target.value }))} /></div>
+          <div className="form-group"><label>Biografía</label><textarea rows={3} value={studForm.biography || ''} onChange={e => setStudForm(f => ({ ...f, biography: e.target.value }))} /></div>
           <div className="form-group" style={{ display: 'flex', alignItems: 'center', gap: '.75rem' }}>
             <input type="checkbox" id="active-check" checked={studForm.active} onChange={e => setStudForm(f => ({ ...f, active: e.target.checked }))} style={{ width: 'auto' }} />
             <label htmlFor="active-check" style={{ margin: 0 }}>{t.people.form_stud.active}</label>

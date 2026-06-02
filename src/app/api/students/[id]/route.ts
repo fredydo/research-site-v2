@@ -13,12 +13,12 @@ async function requireAdmin() {
 
 export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
   if (!await requireAdmin()) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-  const { fullName, email, researchLine, yearInit, yearEnd, pictureUrl, active, type } = await req.json()
+  const { fullName, email, researchLine, yearInit, yearEnd, pictureUrl, active, type, userId } = await req.json()
   const now = new Date().toISOString()
   await pool.query(
     `UPDATE students SET "fullName"=$1, email=$2, "researchLine"=$3, "yearInit"=$4, "yearEnd"=$5,
-     "pictureUrl"=$6, active=$7, type=$8, updated=$9 WHERE id=$10`,
-    [fullName, email, researchLine, yearInit || null, yearEnd || null, pictureUrl || null, active, type, now, params.id]
+     "pictureUrl"=$6, active=$7, type=$8, "userId"=$9, updated=$10 WHERE id=$11`,
+    [fullName, email, researchLine, yearInit || null, yearEnd || null, pictureUrl || null, active, type, userId || null, now, params.id]
   )
   return NextResponse.json({ message: 'Updated' })
 }

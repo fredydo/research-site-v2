@@ -12,7 +12,7 @@ async function requireAdmin() {
 
 export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
   if (!await requireAdmin()) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-  const { citation, year, type, researchLine, paperUrl, bibtexCitation, doi } = await req.json()
+  const { citation, year, type, researchLine, paperUrl, bibtexCitation, doi, userIds } = await req.json()
   const yearVal = String(year ?? '').slice(0, 4)
   const now = new Date().toISOString()
   await pool.query(
@@ -22,6 +22,18 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
      WHERE id=$9`,
     [citation, yearVal, type, researchLine, paperUrl || null, bibtexCitation || null, doi || null, now, params.id]
   )
+  // Update user assignments if provided
+  if (userIds !== undefined) {
+    await pool.query('DELETE FROM publications_user_user WHERE "publicationsId" = $1', [params.id])
+    if (userIds && userIds.length > 0) {
+      for (const uid of userIds) {
+        await pool.query(
+          'INSERT INTO publications_user_user ("publicationsId", "userId") VALUES ($1, $2) ON CONFLICT DO NOTHING',
+          [params.id, uid]
+        )
+      }
+    }
+  }
   return NextResponse.json({ message: 'Updated' })
 }
 
