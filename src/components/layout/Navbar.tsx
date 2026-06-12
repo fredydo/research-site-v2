@@ -23,10 +23,12 @@ export default function Navbar({ session }: { session: Session | null }) {
       <div className="container">
         <div className="navbar-inner">
           <Link href="/" className="navbar-brand">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/images/layout/logoGITA.png" alt="GITA logo" style={{ height: '40px', width: 'auto' }} />
+            <div style={{ width: '60px', height: '60px', borderRadius: '50%', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '5px', flexShrink: 0 }}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/images/layout/logoGITA.png" alt="GITA logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+            </div>
             <span>
-              <span className="navbar-brand-name">GITA</span>
+              <span className="navbar-brand-name">Grupo de Investigación en Telecomunicaciones Aplicadas</span>
               <span className="navbar-brand-sub">Universidad de Antioquia</span>
             </span>
           </Link>

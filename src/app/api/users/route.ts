@@ -28,7 +28,7 @@ export async function POST(req: NextRequest) {
 
   const { rows } = await pool.query(
     `INSERT INTO "user" ("fullName", email, password, biography, "profilePictureUrl", "googleScholarUrl", "cvlacUrl", "researchInterests", "researchLine", admin, "isProfessor", created, updated)
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$11) RETURNING id`,
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$12) RETURNING id`,
     [fullName, email, hashed, biography || null, profilePictureUrl || null, googleScholarUrl || null, cvlacUrl || null, researchInterests || null, researchLine, admin || false, isProfessor !== false, now]
   )
   return NextResponse.json({ data: rows[0] }, { status: 201 })

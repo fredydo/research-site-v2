@@ -98,12 +98,16 @@ export default function PeoplePage() {
                   <p className="text-sm text-muted" style={{ marginBottom: '.4rem' }}>{prof.email}</p>
                   {prof.researchInterests && <p className="text-sm" style={{ marginBottom: '.4rem' }}><strong>{t.people.interests}:</strong> {prof.researchInterests}</p>}
                   {prof.bio && <p className="text-sm" style={{ color: 'var(--gray-600)', marginBottom: '.75rem' }}>{prof.bio}</p>}
-                  <div style={{ display: 'flex', gap: '.5rem', flexWrap: 'wrap' }}>
+                  {/* Badges row */}
+                  <div style={{ display: 'flex', gap: '.4rem', flexWrap: 'wrap', marginBottom: '.5rem' }}>
                     {prof.isProfessor
-                      ? <span className="badge badge-green">Profesor</span>
-                      : <span style={{ fontSize: '.72rem', background: 'var(--gray-100)', color: 'var(--gray-500)', padding: '2px 8px', borderRadius: '4px', fontWeight: 600 }}>Miembro</span>
+                      ? <span className="badge badge-green">{t.people.professor_badge}</span>
+                      : <span style={{ fontSize: '.72rem', background: 'var(--gray-100)', color: 'var(--gray-500)', padding: '2px 8px', borderRadius: '4px', fontWeight: 600 }}>{t.people.member_badge}</span>
                     }
-                    {prof.admin && <span style={{ fontSize: '.72rem', background: '#fef3c7', color: '#92400e', padding: '2px 8px', borderRadius: '4px', fontWeight: 600, marginLeft: '.25rem' }}>Admin</span>}
+                    {prof.admin && <span style={{ fontSize: '.72rem', background: '#fef3c7', color: '#92400e', padding: '2px 8px', borderRadius: '4px', fontWeight: 600 }}>Admin</span>}
+                  </div>
+                  {/* Actions row */}
+                  <div style={{ display: 'flex', gap: '.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
                     {prof.googleScholarUrl && <a href={prof.googleScholarUrl} target="_blank" rel="noopener noreferrer" className="btn btn-outline btn-sm">Google Scholar</a>}
                     {prof.cvlacUrl && <a href={prof.cvlacUrl} target="_blank" rel="noopener noreferrer" className="btn btn-outline btn-sm">CvLAC</a>}
                     <a href={`/people/${prof.id}`} className="btn btn-outline btn-sm">View more →</a>

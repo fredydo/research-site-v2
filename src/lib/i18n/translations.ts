@@ -115,6 +115,7 @@ export const translations = {
       alumni_badge:  'Egresado',
       admin_badge:   'Admin',
       member_badge:  'Miembro',
+      professor_badge: 'Profesor',
       interests:     'Intereses de investigación',
       form_prof: {
         full_name:    'Nombre completo *',
@@ -400,6 +401,7 @@ export const translations = {
       alumni_badge:  'Alumni',
       admin_badge:   'Admin',
       member_badge:  'Member',
+      professor_badge: 'Professor',
       interests:     'Research interests',
       form_prof: {
         full_name:    'Full name *',

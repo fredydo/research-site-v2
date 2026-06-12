@@ -75,7 +75,7 @@ export default function Footer() {
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '.75rem', marginBottom: '1rem' }}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/images/layout/logoGITA.png" alt="GITA" style={{ width: '48px', height: '48px', borderRadius: '50%', background: '#fff', padding: '4px' }} />
+                <img src="/images/layout/logoGITA.png" alt="GITA" style={{ width: '70px', height: '70px', borderRadius: '50%', background: '#fff', padding: '4px' }} />
                 <span style={{ color: '#fff', fontWeight: 700, fontSize: '1.1rem', fontFamily: 'var(--font-news)' }}>GITA</span>
               </div>
               <p style={{ color: 'rgba(255,255,255,.55)', fontSize: '.82rem', lineHeight: 1.8, marginBottom: '1.5rem' }}>
@@ -126,7 +126,7 @@ export default function Footer() {
                 {t.footer.contact}
               </p>
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/images/layout/logo-udea.png" alt="UdeA" style={{ height: '28px', marginBottom: '1.25rem', filter: 'brightness(0) invert(1) opacity(.45)' }} />
+              <img src="/images/layout/logo-udea.png" alt="UdeA" style={{ height: '100px', marginBottom: '1.25rem', filter: 'brightness(0) invert(1) opacity(1)' }} />
               <p style={{ color: 'rgba(255,255,255,.6)', fontSize: '.82rem', lineHeight: 1.9, marginBottom: '.5rem' }}>
                 +57 4 2198523
               </p>

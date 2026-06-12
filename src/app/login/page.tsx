@@ -32,7 +32,7 @@ export default function LoginPage() {
         {/* Logo */}
         <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/images/layout/logoGITA.png" alt="GITA" style={{ height: '56px', margin: '0 auto 1rem' }} />
+          <img src="/images/layout/logoGITA.png" alt="GITA" style={{ height: '80px', margin: '0 auto 1rem' }} />
           <h2 style={{ fontSize: '1.8rem', color: 'var(--green-800)' }}>Log in</h2>
           <p className="text-sm text-muted">Access the GITA research group dashboard</p>
         </div>

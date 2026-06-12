@@ -19,19 +19,19 @@ async function getStats() {
 const RESEARCH_LINES = [
   {
     href:  '/publications?type=pattern_analysis_and_signal_processing',
-    img:   '/images/home/signal-procesing.jpg',
+    img:   '/images/home/signal_processing.png',
     title: 'Pattern Analysis and Signal Processing',
     text:  "We analyse bio-signals (speech, gait, handwriting) from patients with neurodegenerative disorders like Parkinson's and Alzheimer's. Our aim is cutting-edge technology for automatic detection and unobtrusive monitoring.",
   },
   {
     href:  '/publications?type=communications_systems_modeling',
-    img:   '/images/home/system_modeling.jpg',
+    img:   '/images/home/system_modeling.png',
     title: "Communication's Systems Modeling",
     text:  "Focused on planning, dimensioning, management, and theoretical analysis of communication networks — both wireless and wired. We study emerging architectures for the Future Internet.",
   },
   {
     href:  '/publications?type=optical_communications',
-    img:   '/images/home/optical.jpg',
+    img:   '/images/home/optical.png',
     title: 'Optical Communications',
     text:  'Our key areas are Optical Fiber Technologies and High-Speed Networking: optical wavelength transport, DSP techniques, elastic optical networks, and photonic device materials.',
   },
