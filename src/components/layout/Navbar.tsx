@@ -8,7 +8,7 @@ import { useLang } from '@/lib/i18n/LangContext'
 
 export default function Navbar({ session }: { session: Session | null }) {
   const pathname = usePathname()
-  const { t, lang, toggleLang } = useLang()
+  const { t } = useLang()
 
   const NAV_LINKS = [
     { href: '/',             label: t.nav.home },
@@ -42,14 +42,6 @@ export default function Navbar({ session }: { session: Session | null }) {
           </ul>
 
           <div className="navbar-actions">
-            <button
-              onClick={toggleLang}
-              className="btn btn-ghost btn-sm"
-              title={lang === 'es' ? 'Switch to English' : 'Cambiar a Español'}
-              style={{ fontWeight: 600, fontSize: '.8rem', letterSpacing: '.05em', border: '1px solid rgba(255,255,255,.25)', borderRadius: 'var(--radius)', padding: '.25rem .6rem', minWidth: '42px' }}
-            >
-              {lang === 'es' ? '🇬🇧 EN' : '🇨🇴 ES'}
-            </button>
 
             {session ? (
               <>
