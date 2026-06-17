@@ -68,6 +68,8 @@ export default function ProjectsPage() {
   const [activeTab, setActiveTab]       = useState(0)
   const [projects, setProjects]         = useState<Project[]>([])
   const [loading, setLoading]           = useState(true)
+  const [sortBy, setSortBy]         = useState<'newest' | 'oldest'>('newest')
+  const [filterStatus, setFilterStatus] = useState<'all' | 'active' | 'completed'>('all')
   const [showForm, setShowForm]         = useState(false)
   const [editTarget, setEditTarget]     = useState<Project | null>(null)
   const [deleteTarget, setDeleteTarget] = useState<Project | null>(null)
@@ -96,6 +98,19 @@ export default function ProjectsPage() {
   const openEdit = (p: Project) => { setEditTarget(p); setForm({ title: p.title, description: p.description, dateInit: p.dateInit || '', dateEnd: p.dateEnd || '', budget: p.budget ? String(p.budget) : '', fileUrl: p.fileUrl || '', codeId: p.codeId || '', fundingAgency: p.fundingAgency || '', researchLine: p.researchLine, userIds: [] }); setShowForm(true) }
   const handleSave = async () => { setSaving(true); const method = editTarget ? 'PUT' : 'POST'; const url = editTarget ? `/api/projects/${editTarget.id}` : '/api/projects'; await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form) }); setSaving(false); setShowForm(false); load() }
   const handleDelete = async () => { if (!deleteTarget) return; setDeleting(true); await fetch(`/api/projects/${deleteTarget.id}`, { method: 'DELETE' }); setDeleting(false); setDeleteTarget(null); load() }
+
+  // Filter and sort projects
+  const filteredProjects = projects
+    .filter(p => {
+      if (filterStatus === 'active') return !p.dateEnd || new Date(p.dateEnd) >= new Date()
+      if (filterStatus === 'completed') return p.dateEnd && new Date(p.dateEnd) < new Date()
+      return true
+    })
+    .sort((a, b) => {
+      const da = a.dateInit ? new Date(a.dateInit).getTime() : 0
+      const db = b.dateInit ? new Date(b.dateInit).getTime() : 0
+      return sortBy === 'newest' ? db - da : da - db
+    })
 
   return (
     <>
@@ -129,17 +144,41 @@ export default function ProjectsPage() {
 
         {isAdmin && (
           <div style={{ marginBottom: '1.5rem' }}>
-            <button className="btn btn-primary" onClick={openAdd}>{t.projects.add}</button>
+            <button className="btn btn-primary" onClick={openAdd}>Add project</button>
           </div>
         )}
 
+        {/* Filters */}
+        <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', marginBottom: '1.5rem', alignItems: 'center' }}>
+          <div style={{ display: 'flex', gap: '.4rem' }}>
+            {(['all', 'active', 'completed'] as const).map(s => (
+              <button key={s} onClick={() => setFilterStatus(s)} style={{
+                padding: '5px 14px', borderRadius: '20px', fontSize: '.78rem', fontWeight: 600,
+                cursor: 'pointer', border: '1.5px solid',
+                borderColor: filterStatus === s ? 'var(--green-700)' : 'var(--color-border)',
+                background:  filterStatus === s ? 'var(--green-700)' : '#fff',
+                color:       filterStatus === s ? '#fff' : 'var(--gray-500)',
+              }}>
+                {s === 'all' ? 'All' : s === 'active' ? 'Active' : 'Completed'}
+              </button>
+            ))}
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '.5rem', marginLeft: 'auto' }}>
+            <span style={{ fontSize: '.8rem', color: 'var(--gray-500)' }}>Sort:</span>
+            <select value={sortBy} onChange={e => setSortBy(e.target.value as 'newest' | 'oldest')} style={{ fontSize: '.8rem', padding: '4px 8px', borderRadius: 'var(--radius)', border: '1px solid var(--color-border)' }}>
+              <option value="newest">Newest first</option>
+              <option value="oldest">Oldest first</option>
+            </select>
+          </div>
+        </div>
+
         {loading ? (
-          <p className="text-muted">{t.projects.loading}</p>
-        ) : projects.length === 0 ? (
-          <p className="text-muted text-center" style={{ padding: '3rem' }}>{t.projects.no_results}</p>
+          <p className="text-muted">Loading…</p>
+        ) : filteredProjects.length === 0 ? (
+          <p className="text-muted text-center" style={{ padding: '3rem' }}>No projects found.</p>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            {projects.map(project => {
+            {filteredProjects.map(project => {
               const fmtDate = (d?: string) => {
                 if (!d) return ''
                 const [y, m] = d.split('-')
@@ -185,19 +224,19 @@ export default function ProjectsPage() {
                     )}
                     {project.fundingAgency && (
                       <div>
-                        <p style={{ fontSize: '.65rem', textTransform: 'uppercase', letterSpacing: '.08em', color: 'var(--gray-400)', marginBottom: '.15rem', fontWeight: 700 }}>{t.projects.funded_by}</p>
+                        <p style={{ fontSize: '.65rem', textTransform: 'uppercase', letterSpacing: '.08em', color: 'var(--gray-400)', marginBottom: '.15rem', fontWeight: 700 }}>Funded by</p>
                         <p style={{ fontSize: '.82rem', color: 'var(--gray-800)' }}>{project.fundingAgency}</p>
                       </div>
                     )}
                     {project.budget && (
                       <div>
-                        <p style={{ fontSize: '.65rem', textTransform: 'uppercase', letterSpacing: '.08em', color: 'var(--gray-400)', marginBottom: '.15rem', fontWeight: 700 }}>{t.projects.budget}</p>
+                        <p style={{ fontSize: '.65rem', textTransform: 'uppercase', letterSpacing: '.08em', color: 'var(--gray-400)', marginBottom: '.15rem', fontWeight: 700 }}>Budget</p>
                         <p style={{ fontSize: '.82rem', color: 'var(--gray-800)' }}>{Number(project.budget).toLocaleString()} COP</p>
                       </div>
                     )}
                     {project.fileUrl && (
                       <a href={project.fileUrl} target="_blank" rel="noopener noreferrer" style={{ fontSize: '.75rem', color: '#1e40af', background: '#dbeafe', padding: '4px 10px', borderRadius: '4px', textDecoration: 'none', fontWeight: 500, marginTop: 'auto', textAlign: 'center' as const }}>
-                        📄 {t.projects.see_file}
+                        📄 See file
                       </a>
                     )}
                   </div>
