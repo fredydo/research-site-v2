@@ -21,11 +21,11 @@ export async function GET(req: NextRequest) {
             p."paperUrl", p."bibtexCitation", p."researchLine", p.type,
             COALESCE(p.doi, '') AS doi,
             COALESCE(
-              array_agg(pu."userId") FILTER (WHERE pu."userId" IS NOT NULL),
+              array_agg(pp."peopleId") FILTER (WHERE pp."peopleId" IS NOT NULL),
               ARRAY[]::integer[]
             ) AS "userIds"
      FROM publications p
-     LEFT JOIN publications_user_user pu ON pu."publicationsId" = p.id
+     LEFT JOIN publications_people pp ON pp."publicationsId" = p.id
      WHERE UPPER(p."researchLine") = UPPER($1)
      GROUP BY p.id
      ORDER BY p.year DESC, p.id DESC`,
@@ -39,14 +39,27 @@ export async function POST(req: NextRequest) {
   if (!session || (session.user as any).role !== 'admin')
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
-  const { citation, year, type, researchLine, paperUrl, bibtexCitation, doi } = await req.json()
+  const { citation, year, type, researchLine, paperUrl, bibtexCitation, doi, userIds } = await req.json()
   const now = new Date().toISOString()
-  // Extract just the year number if a full date was passed
   const yearVal = String(year ?? '').slice(0, 4)
+
   const { rows } = await pool.query(
     `INSERT INTO publications (citation, year, type, "researchLine", "paperUrl", "bibtexCitation", doi, created, updated)
      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $8) RETURNING id`,
     [citation, yearVal, type || 'JOURNAL ARTICLES', researchLine, paperUrl || null, bibtexCitation || null, doi || null, now]
   )
-  return NextResponse.json({ data: rows[0] }, { status: 201 })
+
+  const pubId = rows[0].id
+
+  // Link authors (people) to the publication
+  if (Array.isArray(userIds) && userIds.length > 0) {
+    for (const peopleId of userIds) {
+      await pool.query(
+        'INSERT INTO publications_people ("publicationsId", "peopleId") VALUES ($1, $2) ON CONFLICT DO NOTHING',
+        [pubId, peopleId]
+      )
+    }
+  }
+
+  return NextResponse.json({ data: { id: pubId } }, { status: 201 })
 }

@@ -22,13 +22,13 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
      WHERE id=$9`,
     [citation, yearVal, type, researchLine, paperUrl || null, bibtexCitation || null, doi || null, now, params.id]
   )
-  // Update user assignments if provided
+  // Update people assignments if provided
   if (userIds !== undefined) {
-    await pool.query('DELETE FROM publications_user_user WHERE "publicationsId" = $1', [params.id])
+    await pool.query('DELETE FROM publications_people WHERE "publicationsId" = $1', [params.id])
     if (userIds && userIds.length > 0) {
       for (const uid of userIds) {
         await pool.query(
-          'INSERT INTO publications_user_user ("publicationsId", "userId") VALUES ($1, $2) ON CONFLICT DO NOTHING',
+          'INSERT INTO publications_people ("publicationsId", "peopleId") VALUES ($1, $2) ON CONFLICT DO NOTHING',
           [params.id, uid]
         )
       }

@@ -21,11 +21,11 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     [title, description, dateInit || null, dateEnd || null, budget ? Number(budget) : null, fileUrl || null, codeId || null, fundingAgency || null, researchLine, now, params.id]
   )
   if (userIds !== undefined) {
-    await pool.query('DELETE FROM projects_user_user WHERE "projectsId" = $1', [params.id])
+    await pool.query('DELETE FROM projects_people WHERE "projectsId" = $1', [params.id])
     if (userIds && userIds.length > 0) {
       for (const uid of userIds) {
         await pool.query(
-          'INSERT INTO projects_user_user ("projectsId", "userId") VALUES ($1, $2) ON CONFLICT DO NOTHING',
+          'INSERT INTO projects_people ("projectsId", "peopleId") VALUES ($1, $2) ON CONFLICT DO NOTHING',
           [params.id, uid]
         )
       }
