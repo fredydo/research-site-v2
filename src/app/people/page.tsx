@@ -11,14 +11,14 @@ type Person = {
   profilePictureUrl?: string; googleScholarUrl?: string; cvlacUrl?: string
   researchInterests?: string; researchLine: string; yearInit?: string
   yearEnd?: string; active: boolean; admin: boolean; isPublic: boolean
-  supervisorId?: number; supervisorName?: string; roles: string[]; publicationCount?: number
+  supervisorId?: number; supervisorName?: string; roles: string[]; publicationCount?: number; researchLines?: string[]
 }
 type PersonForm = {
   fullName: string; email: string; password: string; biography: string
   profilePictureUrl: string; googleScholarUrl: string; cvlacUrl: string
   researchInterests: string; researchLine: string; yearInit: string
   yearEnd: string; active: boolean; admin: boolean; isPublic: boolean
-  supervisorId: string; roles: string[]
+  supervisorId: string; roles: string[]; researchLines: string[]
 }
 
 const RL_OPTIONS = [
@@ -51,7 +51,7 @@ const EMPTY_FORM: PersonForm = {
   profilePictureUrl: '', googleScholarUrl: '', cvlacUrl: '',
   researchInterests: '', researchLine: 'Pattern Analysis And Signal Processing',
   yearInit: '', yearEnd: '', active: true, admin: false, isPublic: true,
-  supervisorId: '', roles: ['professor'],
+  supervisorId: '', roles: ['professor'], researchLines: ['Pattern Analysis And Signal Processing'],
 }
 function initials(name: string) {
   return name.split(' ').slice(0, 2).map(n => n[0]).join('').toUpperCase()
@@ -105,6 +105,7 @@ export default function PeoplePage() {
       yearInit: p.yearInit || '', yearEnd: p.yearEnd || '',
       active: p.active, admin: p.admin, isPublic: p.isPublic,
       supervisorId: String(p.supervisorId || ''), roles: p.roles,
+      researchLines: p.researchLines?.length ? p.researchLines : (p.researchLine ? [p.researchLine] : []),
     })
     setShowForm(true)
   }
@@ -139,7 +140,9 @@ export default function PeoplePage() {
     }))
   }
 
-  const filtered = filterRL ? people.filter(p => p.researchLine === filterRL) : people
+  const filtered = filterRL
+    ? people.filter(p => (p.researchLines?.length ? p.researchLines.includes(filterRL) : p.researchLine === filterRL))
+    : people
 
   return (
     <>
@@ -277,10 +280,27 @@ export default function PeoplePage() {
             <div className="form-group"><label>Start year</label><input value={form.yearInit} onChange={e => setForm(f => ({ ...f, yearInit: e.target.value }))} placeholder="2020" /></div>
             <div className="form-group"><label>End year</label><input value={form.yearEnd} onChange={e => setForm(f => ({ ...f, yearEnd: e.target.value }))} placeholder="2024" /></div>
           </div>
-          <div className="form-group"><label>Research line</label>
-            <select value={form.researchLine} onChange={e => setForm(f => ({ ...f, researchLine: e.target.value }))}>
-              {RL_OPTIONS.map(r => <option key={r} value={r}>{r}</option>)}
-            </select>
+          <div className="form-group"><label>Research lines</label>
+            <div style={{ display: 'flex', gap: '.5rem', flexWrap: 'wrap' }}>
+              {RL_OPTIONS.map(r => {
+                const selected = form.researchLines.includes(r)
+                return (
+                  <button key={r} type="button" onClick={() => setForm(f => ({
+                    ...f,
+                    researchLines: selected ? f.researchLines.filter(x => x !== r) : [...f.researchLines, r],
+                    researchLine: selected ? (f.researchLine === r ? (f.researchLines.find(x => x !== r) || '') : f.researchLine) : (f.researchLine || r),
+                  }))} style={{
+                    padding: '6px 14px', borderRadius: '20px', fontSize: '.8rem', fontWeight: 600,
+                    cursor: 'pointer', border: '1.5px solid',
+                    borderColor: selected ? 'var(--green-700)' : 'var(--color-border)',
+                    background:  selected ? 'var(--green-700)' : '#fff',
+                    color:       selected ? '#fff' : 'var(--gray-600)',
+                  }}>
+                    {r}
+                  </button>
+                )
+              })}
+            </div>
           </div>
           <div className="form-group"><label>Supervisor</label>
             <select value={form.supervisorId} onChange={e => setForm(f => ({ ...f, supervisorId: e.target.value }))}>

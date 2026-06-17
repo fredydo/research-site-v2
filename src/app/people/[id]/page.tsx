@@ -79,6 +79,7 @@ export default function ProfessorProfilePage() {
   const [profileForm, setProfileForm] = useState({
     fullName: '', biography: '', researchInterests: '',
     googleScholarUrl: '', cvlacUrl: '', profilePictureUrl: '', researchLine: '',
+    researchLines: [] as string[],
   })
 
   // Publication add/edit/delete
@@ -133,6 +134,7 @@ export default function ProfessorProfilePage() {
       cvlacUrl:          professor.cvlacUrl || '',
       profilePictureUrl: professor.profilePictureUrl || '',
       researchLine:      professor.researchLine || '',
+      researchLines:     (professor as any).researchLines?.length ? (professor as any).researchLines : (professor.researchLine ? [professor.researchLine] : []),
     })
     setShowEditProfile(true)
   }
@@ -453,10 +455,27 @@ export default function ProfessorProfilePage() {
           <div className="form-group"><label>Full name</label>
             <input value={profileForm.fullName} onChange={e => setProfileForm(f => ({ ...f, fullName: e.target.value }))} />
           </div>
-          <div className="form-group"><label>Research line</label>
-            <select value={profileForm.researchLine} onChange={e => setProfileForm(f => ({ ...f, researchLine: e.target.value }))}>
-              {RL_OPTIONS.map(r => <option key={r} value={r}>{r}</option>)}
-            </select>
+          <div className="form-group"><label>Research lines</label>
+            <div style={{ display: 'flex', gap: '.5rem', flexWrap: 'wrap' }}>
+              {RL_OPTIONS.map(r => {
+                const selected = profileForm.researchLines.includes(r)
+                return (
+                  <button key={r} type="button" onClick={() => setProfileForm(f => ({
+                    ...f,
+                    researchLines: selected ? f.researchLines.filter(x => x !== r) : [...f.researchLines, r],
+                    researchLine: selected ? (f.researchLine === r ? '' : f.researchLine) : (f.researchLine || r),
+                  }))} style={{
+                    padding: '6px 14px', borderRadius: '20px', fontSize: '.8rem', fontWeight: 600,
+                    cursor: 'pointer', border: '1.5px solid',
+                    borderColor: selected ? 'var(--green-700)' : 'var(--color-border)',
+                    background:  selected ? 'var(--green-700)' : '#fff',
+                    color:       selected ? '#fff' : 'var(--gray-600)',
+                  }}>
+                    {r}
+                  </button>
+                )
+              })}
+            </div>
           </div>
           <div className="form-group"><label>Research interests</label>
             <input value={profileForm.researchInterests} onChange={e => setProfileForm(f => ({ ...f, researchInterests: e.target.value }))} />

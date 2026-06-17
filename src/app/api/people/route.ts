@@ -15,9 +15,13 @@ export async function GET(req: NextRequest) {
             p."researchLine", p."yearInit", p."yearEnd", p.active,
             p.admin, p."isPublic", p."supervisorId",
             COALESCE(
-              array_agg(DISTINCT pr.role ORDER BY pr.role) FILTER (WHERE pr.role IS NOT NULL),
+              array_agg(DISTINCT pr.role) FILTER (WHERE pr.role IS NOT NULL),
               ARRAY[]::text[]
             ) AS roles,
+            COALESCE(
+              (SELECT array_agg("researchLine" ORDER BY "researchLine") FROM people_research_lines WHERE "peopleId" = p.id),
+              ARRAY[]::text[]
+            ) AS "researchLines",
             sup."fullName" AS "supervisorName",
             COUNT(DISTINCT pp."publicationsId") AS "publicationCount"
      FROM people p

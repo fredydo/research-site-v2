@@ -42,6 +42,13 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
       [id]
     )
 
+    // All research lines this person explicitly belongs to
+    const { rows: rlRows } = await pool.query(
+      `SELECT "researchLine" FROM people_research_lines WHERE "peopleId" = $1 ORDER BY "researchLine"`,
+      [id]
+    )
+    const researchLines = rlRows.map(r => r.researchLine)
+
     const { rows: students } = await pool.query(
       `SELECT p.id, p."fullName", p.email, p."yearInit", p."yearEnd",
               p."profilePictureUrl" AS "pictureUrl", p.active,
@@ -68,6 +75,7 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
         publications,
         projects,
         students,
+        researchLines,
         stats: {
           publications: publications.length,
           projects:     projects.length,

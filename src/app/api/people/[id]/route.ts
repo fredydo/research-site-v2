@@ -15,9 +15,13 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
   const { rows } = await pool.query(
     `SELECT p.*, 
             COALESCE(
-              array_agg(pr.role ORDER BY pr.role) FILTER (WHERE pr.role IS NOT NULL),
+              array_agg(DISTINCT pr.role) FILTER (WHERE pr.role IS NOT NULL),
               ARRAY[]::text[]
             ) AS roles,
+            COALESCE(
+              (SELECT array_agg("researchLine" ORDER BY "researchLine") FROM people_research_lines WHERE "peopleId" = p.id),
+              ARRAY[]::text[]
+            ) AS "researchLines",
             sup."fullName" AS "supervisorName"
      FROM people p
      LEFT JOIN people_roles pr ON pr."peopleId" = p.id
@@ -36,7 +40,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
   const {
     fullName, email, password, biography, profilePictureUrl,
     googleScholarUrl, cvlacUrl, researchInterests, researchLine,
-    yearInit, yearEnd, active, admin, isPublic, supervisorId, roles
+    yearInit, yearEnd, active, admin, isPublic, supervisorId, roles, researchLines
   } = await req.json()
 
   const now = new Date().toISOString()
@@ -79,6 +83,16 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
         [params.id, role]
       )
     }
+  // Update research lines
+  if (researchLines !== undefined) {
+    await pool.query('DELETE FROM people_research_lines WHERE "peopleId" = $1', [params.id])
+    for (const rl of researchLines) {
+      await pool.query(
+        'INSERT INTO people_research_lines ("peopleId", "researchLine") VALUES ($1, $2) ON CONFLICT DO NOTHING',
+        [params.id, rl]
+      )
+    }
+  }
   }
 
   return NextResponse.json({ message: 'Updated' })
