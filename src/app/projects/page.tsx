@@ -80,7 +80,9 @@ export default function ProjectsPage() {
   const [professors, setProfessors] = useState<{id:number; name:string}[]>([])
 
   useEffect(() => {
-    fetch('/api/users').then(r => r.json()).then(({ data }) => setProfessors(data || []))
+    fetch('/api/people').then(r => r.json()).then(({ data }) =>
+      setProfessors((data || []).map((p: any) => ({ id: p.id, name: p.fullName })))
+    )
   }, [])
 
   const TAB_LABELS = [t.rl.pattern, t.rl.comms, t.rl.optical]

@@ -81,21 +81,8 @@ export default function PublicationsPage() {
   const [sortBy, setSortBy] = useState<'year' | 'type'>('year')
 
   useEffect(() => {
-    Promise.all([
-      fetch('/api/users').then(r => r.json()),
-      fetch('/api/students?type=phd').then(r => r.json()),
-      fetch('/api/students?type=masters').then(r => r.json()),
-      fetch('/api/students?type=undergraduate').then(r => r.json()),
-      fetch('/api/students?type=alumni').then(r => r.json()),
-    ]).then(([users, phd, masters, undergrad, alumni]) => {
-      const userList = (users.data || []).map((u: any) => ({ id: u.id, name: u.name }))
-      const studentList = [
-        ...(phd.data || []),
-        ...(masters.data || []),
-        ...(undergrad.data || []),
-        ...(alumni.data || []),
-      ].map((s: any) => ({ id: s.id + 10000, name: s.fullName }))
-      setAllPeople([...userList, ...studentList])
+    fetch('/api/people').then(r => r.json()).then(({ data }) => {
+      setAllPeople((data || []).map((p: any) => ({ id: p.id, name: p.fullName })))
     })
   }, [])
 
