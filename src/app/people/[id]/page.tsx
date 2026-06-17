@@ -71,6 +71,7 @@ export default function ProfessorProfilePage() {
   const [loading, setLoading]           = useState(true)
   const [activeTab, setActiveTab]       = useState<'publications' | 'projects' | 'students'>('publications')
   const [pubSortBy, setPubSortBy]       = useState<'year' | 'type'>('year')
+  const [openGroups, setOpenGroups]     = useState<Record<string, boolean>>({})
 
   // Profile edit
   const [showEditProfile, setShowEditProfile] = useState(false)
@@ -205,12 +206,21 @@ export default function ProfessorProfilePage() {
     load()
   }
 
+  // Auto-open first group when data or sort mode changes
+  useEffect(() => {
+    if (publications.length === 0) return
+    const key = pubSortBy === 'year'
+      ? (publications[0].yearShort || publications[0].year)
+      : (publications[0].type || 'OTHER')
+    setOpenGroups({ [key]: true })
+  }, [publications, pubSortBy])
   if (loading) return <div className="container" style={{ padding: '4rem', textAlign: 'center' }}><p className="text-muted">Loading…</p></div>
   if (!professor) return <div className="container" style={{ padding: '4rem', textAlign: 'center' }}><p className="text-muted">Person not found.</p></div>
 
   const studentsByType = TYPE_ORDER
     .map(type => ({ type, label: TYPE_LABEL[type], list: students.filter(s => s.type === type) }))
     .filter(g => g.list.length > 0)
+
 
   // Group/sort publications same way as main Publications page
   const byGroup: Record<string, Publication[]> = {}
@@ -319,13 +329,28 @@ export default function ProfessorProfilePage() {
 
             {publications.length === 0 ? (
               <p className="text-muted text-center" style={{ padding: '2rem' }}>No publications found.</p>
-            ) : sortedGroups.map(group => (
-              <div key={group} style={{ marginBottom: '1.5rem' }}>
-                <h3 style={{ fontSize: '.85rem', fontWeight: 700, color: 'var(--green-800)', marginBottom: '.75rem', display: 'flex', alignItems: 'center', gap: '.5rem' }}>
-                  {group}
-                  <span style={{ background: 'var(--green-100)', color: 'var(--green-700)', fontSize: '.72rem', padding: '2px 8px', borderRadius: '20px', fontWeight: 600 }}>{byGroup[group].length} pubs.</span>
-                </h3>
-                <div style={{ border: '1px solid var(--color-border)', borderRadius: 'var(--radius-lg)', overflow: 'hidden' }}>
+            ) : (
+              <div style={{ borderRadius: 'var(--radius-lg)', overflow: 'hidden', border: '1px solid var(--color-border)' }}>
+                {sortedGroups.map(group => (
+                  <div key={group} style={{ borderBottom: '1px solid var(--color-border)' }}>
+                    <button
+                      onClick={() => setOpenGroups(p => ({ ...p, [group]: !p[group] }))}
+                      style={{
+                        width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                        padding: '.9rem 1.25rem', background: openGroups[group] ? 'var(--green-50)' : 'var(--color-surface)',
+                        border: 'none', cursor: 'pointer', transition: 'background .15s',
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '.75rem' }}>
+                        <span style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--green-800)', fontFamily: 'var(--font-news)' }}>{group}</span>
+                        <span style={{ background: 'var(--green-700)', color: '#fff', fontSize: '.7rem', fontWeight: 600, padding: '2px 8px', borderRadius: '20px' }}>
+                          {byGroup[group].length} {byGroup[group].length === 1 ? 'pub.' : 'pubs.'}
+                        </span>
+                      </div>
+                      <span style={{ color: 'var(--green-700)', fontSize: '.85rem', fontWeight: 600 }}>{openGroups[group] ? '▲' : '▼'}</span>
+                    </button>
+                    {openGroups[group] && (
+                <div>
                   {byGroup[group].map((pub, idx) => (
                     <div key={pub._id} style={{ display: 'flex', gap: '1rem', padding: '1rem 1.25rem', borderBottom: idx < byGroup[group].length - 1 ? '1px solid var(--color-border)' : 'none', background: '#fff', alignItems: 'flex-start' }}>
                       <span style={{ flexShrink: 0, width: '28px', height: '28px', borderRadius: '50%', background: 'var(--green-100)', color: 'var(--green-800)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '.75rem', fontWeight: 700 }}>{idx + 1}</span>
@@ -347,8 +372,11 @@ export default function ProfessorProfilePage() {
                     </div>
                   ))}
                 </div>
+                    )}
+                  </div>
+                ))}
               </div>
-            ))}
+            )}
           </div>
         )}
 
