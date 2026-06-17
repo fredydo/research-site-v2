@@ -39,11 +39,19 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
     const { rows: students } = await pool.query(
       `SELECT p.id, p."fullName", p.email, p."yearInit", p."yearEnd",
               p."profilePictureUrl" AS "pictureUrl", p.active,
-              string_agg(pr.role, ', ' ORDER BY pr.role) AS type
+              COALESCE(
+                (SELECT role FROM people_roles 
+                 WHERE "peopleId" = p.id 
+                 AND role IN ('phd','master','undergraduate','alumni','member')
+                 ORDER BY CASE role 
+                   WHEN 'phd' THEN 1 WHEN 'master' THEN 2 
+                   WHEN 'undergraduate' THEN 3 WHEN 'alumni' THEN 4 
+                   ELSE 5 END
+                 LIMIT 1),
+                'member'
+              ) AS type
        FROM people p
-       LEFT JOIN people_roles pr ON pr."peopleId" = p.id
        WHERE p."supervisorId" = $1
-       GROUP BY p.id
        ORDER BY p."fullName"`,
       [id]
     )
