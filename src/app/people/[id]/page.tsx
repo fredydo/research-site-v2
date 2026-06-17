@@ -14,8 +14,8 @@ type Publication = { _id: string; citation: string; yearShort: string; type: str
 type Project     = { id: number; title: string; dateInit?: string; dateEnd?: string; fundingAgency?: string; codeId?: string }
 type Student     = { id: number; fullName: string; email: string; type: string; yearInit?: string; yearEnd?: string; pictureUrl?: string; active: boolean }
 
-const TYPE_ORDER = ['Ph.D', 'Master', 'Bachelor', 'Alumni']
-const TYPE_LABEL: Record<string, string> = { 'Ph.D': 'PhD Students', 'Master': "Master's Students", 'Bachelor': 'Undergraduate', 'Alumni': 'Alumni' }
+const TYPE_ORDER = ['phd', 'master', 'undergraduate', 'alumni', 'member']
+const TYPE_LABEL: Record<string, string> = { 'phd': 'PhD Students', 'master': "Master's Students", 'undergraduate': 'Undergraduate', 'alumni': 'Alumni', 'member': 'Member' }
 
 function initials(name: string) { return name.split(' ').slice(0, 2).map(n => n[0]).join('').toUpperCase() }
 
