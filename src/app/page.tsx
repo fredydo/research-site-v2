@@ -5,7 +5,7 @@ async function getStats() {
   try {
     const [{ rows: p }, { rows: u }, { rows: pr }] = await Promise.all([
       pool.query('SELECT COUNT(*) FROM publications'),
-      pool.query('SELECT COUNT(*) FROM "user"'),
+      pool.query('SELECT COUNT(*) FROM people'),
       pool.query('SELECT COUNT(*) FROM projects'),
     ])
     return {
@@ -56,12 +56,12 @@ export default async function HomePage() {
           </div>
           <div className="hero-stats">
             {[
-              { n: `${stats.publications}+`, l: 'Publications' },
+              { n: `${stats.publications}`,  l: 'Publications' },
               { n: `${stats.researchers}`,   l: 'Researchers' },
               { n: `${stats.projects}`,      l: 'Active projects' },
               { n: '3',                      l: 'Research lines' },
             ].map(({ n, l }) => (
-              <div key={l}>
+              <div key={l} className="stat-item">
                 <div className="stat-number">{n}</div>
                 <div className="stat-label">{l}</div>
               </div>

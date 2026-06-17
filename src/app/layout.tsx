@@ -9,6 +9,11 @@ import './globals.css'
 export const metadata: Metadata = {
   title: { default: 'GITA Research Group', template: '%s | GITA' },
   description: 'Grupo de investigación GITA — Universidad de Antioquia.',
+  icons: {
+    icon: '/favicon.png',
+    shortcut: '/favicon.png',
+    apple: '/favicon.png',
+  },
 }
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
