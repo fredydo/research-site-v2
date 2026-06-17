@@ -244,14 +244,22 @@ export default function PeoplePage() {
                   <div style={{ display: 'flex', gap: '.4rem', flexWrap: 'wrap', marginBottom: '.75rem' }}>
                     {p.active ? <span className="badge badge-green">Active</span> : <span className="badge badge-gray">Inactive</span>}
                     {(p.yearInit || p.yearEnd) && <span className="badge badge-gray">{p.yearInit}{p.yearEnd ? ` – ${p.yearEnd}` : ' – present'}</span>}
-                    {p.supervisorName && <span style={{ fontSize: '.72rem', color: 'var(--gray-500)' }}>Supervisor: {p.supervisorName}</span>}
+                    {p.publicationCount !== undefined && p.publicationCount > 0 && (
+                      <span style={{ fontSize: '.72rem', background: 'var(--green-50)', color: 'var(--green-700)', padding: '2px 8px', borderRadius: '4px', fontWeight: 600, border: '1px solid var(--green-200)' }}>
+                        📄 {p.publicationCount}
+                      </span>
+                    )}
                   </div>
-                  {isAdmin && (
-                    <div style={{ display: 'flex', gap: '.5rem' }}>
-                      <button className="btn btn-sm" style={{ background: 'var(--yellow-100)', color: 'var(--yellow-600)' }} onClick={() => openEdit(p)}>✏️</button>
-                      <button className="btn btn-sm btn-danger" onClick={() => setDeletePerson(p)}>🗑️</button>
-                    </div>
-                  )}
+                  {p.supervisorName && <p style={{ fontSize: '.72rem', color: 'var(--gray-500)', marginBottom: '.75rem' }}>Supervisor: {p.supervisorName}</p>}
+                  <div style={{ display: 'flex', gap: '.5rem', alignItems: 'center' }}>
+                    <Link href={`/people/${p.id}`} className="btn btn-outline btn-sm">View profile →</Link>
+                    {isAdmin && (
+                      <>
+                        <button className="btn btn-sm" style={{ background: 'var(--yellow-100)', color: 'var(--yellow-600)' }} onClick={() => openEdit(p)}>✏️</button>
+                        <button className="btn btn-sm btn-danger" onClick={() => setDeletePerson(p)}>🗑️</button>
+                      </>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>

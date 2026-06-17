@@ -5,7 +5,6 @@ import pool from '@/lib/db/postgres'
 export async function GET(_req: NextRequest, { params }: { params: { id: string } }) {
   const id = params.id
   try {
-    // Get professor from people table
     const { rows: users } = await pool.query(
       `SELECT id, "fullName", "fullName" AS name, email, biography, "profilePictureUrl",
               "googleScholarUrl", "cvlacUrl", "researchInterests", "researchLine", admin
@@ -14,10 +13,14 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
     )
     if (!users[0]) return NextResponse.json({ error: 'Not found' }, { status: 404 })
 
-    // Get publications via new junction table
     const { rows: publications } = await pool.query(
       `SELECT p.id AS "_id", p.citation, p.year, p.type, p."paperUrl",
-              SUBSTRING(p.year, 1, 4) AS "yearShort"
+              p."bibtexCitation", p.doi, p."researchLine",
+              SUBSTRING(p.year, 1, 4) AS "yearShort",
+              COALESCE(
+                (SELECT array_agg(pp2."peopleId") FROM publications_people pp2 WHERE pp2."publicationsId" = p.id),
+                ARRAY[]::integer[]
+              ) AS "userIds"
        FROM publications p
        INNER JOIN publications_people pp ON pp."publicationsId" = p.id
        WHERE pp."peopleId" = $1
@@ -25,9 +28,13 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
       [id]
     )
 
-    // Get projects via new junction table
     const { rows: projects } = await pool.query(
-      `SELECT pr.id, pr.title, pr."dateInit", pr."dateEnd", pr."fundingAgency", pr."codeId"
+      `SELECT pr.id, pr.title, pr.description, pr."dateInit", pr."dateEnd", pr.budget,
+              pr."fileUrl", pr."codeId", pr."fundingAgency", pr."researchLine",
+              COALESCE(
+                (SELECT array_agg(pp2."peopleId") FROM projects_people pp2 WHERE pp2."projectsId" = pr.id),
+                ARRAY[]::integer[]
+              ) AS "userIds"
        FROM projects pr
        INNER JOIN projects_people pp ON pp."projectsId" = pr.id
        WHERE pp."peopleId" = $1
@@ -35,7 +42,6 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
       [id]
     )
 
-    // Get students supervised by this person
     const { rows: students } = await pool.query(
       `SELECT p.id, p."fullName", p.email, p."yearInit", p."yearEnd",
               p."profilePictureUrl" AS "pictureUrl", p.active,
