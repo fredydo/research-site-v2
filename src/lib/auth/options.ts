@@ -5,7 +5,6 @@ import pool from '@/lib/db/postgres'
 
 export const authOptions: NextAuthOptions = {
   session: { strategy: 'jwt', maxAge: 24 * 60 * 60 },
-
   providers: [
     CredentialsProvider({
       name: 'Credentials',
@@ -15,18 +14,14 @@ export const authOptions: NextAuthOptions = {
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null
-
         const { rows } = await pool.query(
-          'SELECT * FROM "user" WHERE email = $1 LIMIT 1',
-          [credentials.email.toLowerCase()]
+          'SELECT * FROM people WHERE LOWER(email) = LOWER($1) AND password IS NOT NULL LIMIT 1',
+          [credentials.email]
         )
-
         const user = rows[0]
         if (!user) return null
-
         const valid = await bcrypt.compare(credentials.password, user.password)
         if (!valid) return null
-
         return {
           id:    String(user.id),
           name:  user.fullName,
@@ -36,7 +31,6 @@ export const authOptions: NextAuthOptions = {
       },
     }),
   ],
-
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
@@ -55,7 +49,6 @@ export const authOptions: NextAuthOptions = {
       return session
     },
   },
-
   pages: {
     signIn: '/login',
     error:  '/login',
