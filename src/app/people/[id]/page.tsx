@@ -38,7 +38,7 @@ const RL_OPTIONS = [
   'Optical Communications',
 ]
 const PUB_TYPE_ORDER: Record<string, number> = {
-  'JOURNAL ARTICLES': 0, 'CONFERENCE PAPERS': 1, 'BOOK CHAPTERS': 2, 'THESIS': 3, 'OTHER': 4,
+  'JOURNAL ARTICLES': 0, 'CONFERENCE ARTICLES': 1, 'BOOK CHAPTERS & LECTURE NOTES': 2, 'BOOKS': 3,
 }
 const EMPTY_PUB = {
   citation: '', year: String(new Date().getFullYear()), type: 'JOURNAL ARTICLES',
@@ -353,11 +353,25 @@ export default function ProfessorProfilePage() {
                     </button>
                     {openGroups[group] && (
                 <div>
-                  {byGroup[group].map((pub, idx) => (
+                  {byGroup[group].map((pub, idx) => {
+                    const typeColors: Record<string, { bg: string; color: string }> = {
+                      'JOURNAL ARTICLES':              { bg: '#dbeafe', color: '#1e40af' },
+                      'CONFERENCE ARTICLES':           { bg: '#fef3c7', color: '#92400e' },
+                      'BOOK CHAPTERS & LECTURE NOTES': { bg: '#ede9fe', color: '#5b21b6' },
+                      'BOOKS':                         { bg: '#d1fae5', color: '#065f46' },
+                    }
+                    const tc = typeColors[pub.type] || { bg: 'var(--gray-100)', color: 'var(--gray-600)' }
+                    const typeLabel: Record<string, string> = {
+                      'JOURNAL ARTICLES': 'Journal',
+                      'CONFERENCE ARTICLES': 'Conference',
+                      'BOOK CHAPTERS & LECTURE NOTES': 'Book Chapter',
+                      'BOOKS': 'Book',
+                    }
+                    return (
                     <div key={pub._id} style={{ display: 'flex', gap: '1rem', padding: '1rem 1.25rem', borderBottom: idx < byGroup[group].length - 1 ? '1px solid var(--color-border)' : 'none', background: '#fff', alignItems: 'flex-start' }}>
                       <span style={{ flexShrink: 0, width: '28px', height: '28px', borderRadius: '50%', background: 'var(--green-100)', color: 'var(--green-800)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '.75rem', fontWeight: 700 }}>{idx + 1}</span>
                       <div style={{ flex: 1 }}>
-                        {pub.type && <span style={{ fontSize: '.7rem', fontWeight: 600, padding: '2px 8px', borderRadius: '4px', background: '#dbeafe', color: '#1e40af', display: 'inline-block', marginBottom: '.3rem' }}>{pub.type}</span>}
+                        {pub.type && <span style={{ fontSize: '.7rem', fontWeight: 600, padding: '2px 8px', borderRadius: '4px', background: tc.bg, color: tc.color, display: 'inline-block', marginBottom: '.3rem' }}>{typeLabel[pub.type] || pub.type}</span>}
                         <p style={{ fontSize: '.875rem', lineHeight: 1.6 }}>{pub.citation}</p>
                         <div style={{ display: 'flex', gap: '.75rem', marginTop: '.4rem', alignItems: 'center', flexWrap: 'wrap' }}>
                           {pub.paperUrl && <a href={pub.paperUrl} target="_blank" rel="noopener noreferrer" style={{ fontSize: '.75rem', color: '#1e40af' }}>📄 PDF</a>}
@@ -372,7 +386,7 @@ export default function ProfessorProfilePage() {
                       </div>
                       <span style={{ fontSize: '.75rem', color: 'var(--gray-400)', flexShrink: 0 }}>{pub.yearShort}</span>
                     </div>
-                  ))}
+                  )})}
                 </div>
                     )}
                   </div>
@@ -513,11 +527,10 @@ export default function ProfessorProfilePage() {
             </div>
             <div className="form-group"><label>Type</label>
               <select value={pubForm.type} onChange={e => setPubForm(f => ({ ...f, type: e.target.value }))}>
-                <option value="JOURNAL ARTICLES">Journal article</option>
-                <option value="CONFERENCE PAPERS">Conference paper</option>
-                <option value="BOOK CHAPTERS">Book chapter</option>
-                <option value="THESIS">Thesis</option>
-                <option value="OTHER">Other</option>
+                <option value="JOURNAL ARTICLES">Journal Articles</option>
+                <option value="CONFERENCE ARTICLES">Conference Articles</option>
+                <option value="BOOK CHAPTERS & LECTURE NOTES">Book Chapters & Lecture Notes</option>
+                <option value="BOOKS">Books</option>
               </select>
             </div>
             <div className="form-group"><label>DOI</label>
