@@ -376,6 +376,9 @@ export default function ProfessorProfilePage() {
                         <div style={{ display: 'flex', gap: '.75rem', marginTop: '.4rem', alignItems: 'center', flexWrap: 'wrap' }}>
                           {pub.paperUrl && <a href={pub.paperUrl} target="_blank" rel="noopener noreferrer" style={{ fontSize: '.75rem', color: '#1e40af' }}>📄 PDF</a>}
                           {pub.doi && <a href={`https://doi.org/${pub.doi}`} target="_blank" rel="noopener noreferrer" style={{ fontSize: '.75rem', color: '#1e40af' }}>🔗 DOI</a>}
+                          {pub.bibtexCitation && pub.bibtexCitation !== 'None' && pub.bibtexCitation.trim().startsWith('@') && (
+                            <button onClick={() => { navigator.clipboard.writeText(pub.bibtexCitation!); alert('Copied!') }} style={{ fontSize: '.75rem', background: 'none', border: 'none', color: '#1e40af', cursor: 'pointer', padding: 0 }}>📋 BibTeX</button>
+                          )}
                           {isAdmin && (
                             <>
                               <button onClick={() => openEditPub(pub)} style={{ fontSize: '.75rem', background: 'none', border: 'none', color: 'var(--yellow-600)', cursor: 'pointer', padding: 0 }}>✏️ Edit</button>
