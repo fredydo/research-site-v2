@@ -5,9 +5,9 @@ import { authOptions } from '@/lib/auth/options'
 import pool from '@/lib/db/postgres'
 
 const RL_MAP: Record<string, string> = {
-  pattern_analysis_and_signal_processing: 'PATTERN ANALYSIS AND SIGNAL PROCESSING',
-  communications_systems_modeling:        'COMMUNICATIONS SYSTEMS MODELING',
-  optical_communications:                 'OPTICAL COMMUNICATIONS',
+  pattern_analysis_and_signal_processing: 'Pattern Analysis And Signal Processing',
+  communications_systems_modeling:        "Communication's Systems Modeling",
+  optical_communications:                 'Optical Communications',
 }
 
 export async function GET(req: NextRequest) {
