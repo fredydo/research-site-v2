@@ -18,28 +18,27 @@ async function getStats() {
 
 const RESEARCH_LINES = [
   {
-    href:  '/publications?type=pattern_analysis_and_signal_processing',
+    href:  '/publications?tab=pattern_analysis_and_signal_processing',
     img:   '/images/home/signal_processing.png',
     title: 'Pattern Analysis and Signal Processing',
     text:  "We analyse bio-signals (speech, gait, handwriting) from patients with neurodegenerative disorders like Parkinson's and Alzheimer's. Our aim is cutting-edge technology for automatic detection and unobtrusive monitoring.",
   },
   {
-    href:  '/publications?type=communications_systems_modeling',
+    href:  '/publications?tab=communications_systems_modeling',
     img:   '/images/home/system_modeling.png',
     title: "Communication's Systems Modeling",
     text:  "Focused on planning, dimensioning, management, and theoretical analysis of communication networks — both wireless and wired. We study emerging architectures for the Future Internet.",
   },
   {
-    href:  '/publications?type=optical_communications',
+    href:  '/publications?tab=optical_communications',
     img:   '/images/home/optical.png',
     title: 'Optical Communications',
-    text:  'Our key areas are Optical Fiber Technologies and High-Speed Networking: optical wavelength transport, DSP techniques, elastic optical networks, and photonic device materials.',
+    text:  'Design and implementation of optical communication systems such as PON, Radio-over-Fiber, and WDM networks, supported by DSP and Machine Learning for impairment monitoring and mitigation. The line also develops 2D-material-based photonic devices, including graphene-based ultrafast and pulsed lasers.',
   },
 ]
 
 export default async function HomePage() {
   const stats = await getStats()
-
   return (
     <>
       <section className="hero">

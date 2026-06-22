@@ -67,6 +67,12 @@ export default function PublicationsPage() {
   const isAdmin = status === 'authenticated' && (session?.user as any)?.role === 'admin'
 
   const [activeTab, setActiveTab]       = useState(0)
+  useEffect(() => {
+    const tab = new URLSearchParams(window.location.search).get('tab')
+    if (!tab) return
+    const idx = TABS.findIndex(t => TAG_MAP[t.id] === tab)
+    if (idx >= 0) setActiveTab(idx)
+  }, [])
   const [allPeople, setAllPeople]       = useState<{id:number; name:string}[]>([])
   const [pubs, setPubs]                 = useState<Publication[]>([])
   const [loading, setLoading]           = useState(true)
